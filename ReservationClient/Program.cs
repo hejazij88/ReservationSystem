@@ -1,3 +1,4 @@
+using MudBlazor.Services;
 using ReservationClient.Components;
 using ReservationClient.Services;
 
@@ -11,6 +12,9 @@ builder.Services.AddHttpClient<ReservationService>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:5001/"); 
 });
+
+builder.Services.AddMudServices();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
