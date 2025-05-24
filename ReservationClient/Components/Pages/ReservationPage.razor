@@ -1,0 +1,57 @@
+﻿@page "/reservations"
+@using Microsoft.AspNetCore.SignalR.Client
+@using ReservationClient.Model
+@using ReservationClient.Services
+@inject ReservationService ReservationService
+
+<h3>رزرو جدید</h3>
+
+<div class="mb-3">
+    <input @bind="newReservation.CustomerName" placeholder="Customer Name" class="form-control" />
+    <input type="datetime-local" @bind="newReservation.StartTime" class="form-control" />
+    <input type="datetime-local" @bind="newReservation.EndTime" class="form-control" />
+    <input @bind="newReservation.Type" placeholder=" (Hotel or Restaurant)" class="form-control" />
+    <button @onclick="CreateReservation" class="btn btn-primary mt-2">Submit</button>
+</div>
+
+<h4>لیست رزروها (بلادرنگ)</h4>
+<ul>
+    @foreach (var r in reservations)
+    {
+        <li>@r.CustomerName از @r.StartTime - @r.EndTime</li>
+    }
+</ul>
+
+@code {
+    List<Reservation> reservations = new();
+    Reservation newReservation = new();
+
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        reservations = await ReservationService.GetAllAsync();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:5001/reservationHub")
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<Reservation>("ReservationMade", (reservation) =>
+        {
+            reservations.Add(reservation);
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task CreateReservation()
+    {
+        bool result = await ReservationService.CreateAsync(newReservation);
+        if (result)
+        {
+            newReservation = new();
+        }
+    }
+}
