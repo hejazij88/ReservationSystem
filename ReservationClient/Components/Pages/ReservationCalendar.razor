@@ -1,0 +1,57 @@
+﻿@page "/calendar"
+@using ReservationClient.Model
+
+@using ReservationClient.Services
+@inject ReservationService ReservationService
+
+<PageTitle>تقویم رزرو</PageTitle>
+
+<MudPaper Class="p-4">
+    <MudDatePicker Label="Select Day" @bind-Date="selectedDate" DateChanged="OnDateChanged" />
+    
+    <h5 class="mt-4">This Day Reserves:</h5>
+    <MudList Dense="true">
+        @if (dayReservations.Count == 0)
+        {
+            <MudText color="Color.Secondary">UnSubmit Reserve.</MudText>
+        }
+        else
+        {
+            @foreach (var r in dayReservations)
+            {
+                <MudListItem>
+                    <b>@r.CustomerName</b> — @r.StartTime.ToShortTimeString() on @r.EndTime.ToShortTimeString() 
+                </MudListItem>
+            }
+        }
+    </MudList>
+</MudPaper>
+
+@code {
+    DateTime? selectedDate = DateTime.Today;
+    List<Reservation> allReservations = new();
+    List<Reservation> dayReservations = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        allReservations = await ReservationService.GetAllAsync();
+        FilterByDate();
+    }
+
+    private async Task OnDateChanged(DateTime? date)
+    {
+        if (date.HasValue)
+        {
+            selectedDate = date.Value;
+            FilterByDate();
+        }
+    }
+
+    private void FilterByDate()
+    {
+        dayReservations = allReservations
+            .Where(r => r.StartTime.Date == selectedDate.Value)
+            .OrderBy(r => r.StartTime)
+            .ToList();
+    }
+}
