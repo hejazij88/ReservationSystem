@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ReservationSystem.Data;
+using ReservationSystem.Hub;
 using ReservationSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,10 +26,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<ReservationHub>("/reservationHub");
 
 app.Run();

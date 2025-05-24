@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using ReservationSystem.Models;
 using ReservationSystem.Services;
 
@@ -6,11 +7,14 @@ namespace ReservationSystem.Controllers
 {
     public class ReservationController : Controller
     {
+        private readonly IHubContext _hubContext;
+
         private readonly ReservationService _reservationService;
 
-        public ReservationController(ReservationService reservationService)
+        public ReservationController(ReservationService reservationService, IHubContext hubContext)
         {
             _reservationService = reservationService;
+            _hubContext = hubContext;
         }
 
         [HttpPost]
@@ -20,6 +24,8 @@ namespace ReservationSystem.Controllers
             if (result == null)
                 return BadRequest("You Can't Pick This Time.");
 
+
+            await _hubContext.Clients.All.SendAsync("ReservationMade",result);
             return Ok(result);
         }
 
