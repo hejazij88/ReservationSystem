@@ -1,0 +1,39 @@
+﻿@page "/login"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3>ورود</h3>
+
+<MudPaper Class="p-4 max-w-md mx-auto">
+    <MudTextField @bind-Value="model.Username" Label="Username" Required="true" />
+    <MudTextField @bind-Value="model.Password" Label="Password" InputType="InputType.Password" Required="true" />
+
+    <MudButton Color="Color.Primary" OnClick="LoginAsync">Sing In</MudButton>
+    <MudText Color="Color.Error">@errorMessage</MudText>
+</MudPaper>
+
+@code {
+    LoginDto model = new();
+    string errorMessage;
+
+    private async Task LoginAsync()
+    {
+        errorMessage = null;
+        var response = await Http.PostAsJsonAsync("api/auth/login", model);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = "Please Check.";
+        }
+    }
+
+    public class LoginDto
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+}
